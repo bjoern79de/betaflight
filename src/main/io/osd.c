@@ -1239,4 +1239,13 @@ void osdUpdate(timeUs_t currentTimeUs)
     }
 #endif
 }
+
+void osdShowAdjustment(const char * type, int newValue)
+{
+    char buff[OSD_ELEMENT_BUFFER_LENGTH];
+    displayClearScreen(osdDisplayPort);
+    tfp_sprintf(buff, "%s: %i", type, newValue);
+    displayWrite(osdDisplayPort, 12, 7, buff);
+}
+
 #endif // OSD

@@ -41,6 +41,7 @@
 
 #include "io/beeper.h"
 #include "io/motors.h"
+#include "io/osd.h"
 
 #include "fc/config.h"
 #include "fc/controlrate_profile.h"
@@ -221,20 +222,24 @@ static void applyStepAdjustment(controlRateConfig_t *controlRateConfig, uint8_t 
 
     beeperConfirmationBeeps(delta > 0 ? 2 : 1);
     int newValue;
+
     switch (adjustmentFunction) {
     case ADJUSTMENT_RC_RATE:
         newValue = constrain((int)controlRateConfig->rcRate8 + delta, 0, 250); // FIXME magic numbers repeated in cli.c
         controlRateConfig->rcRate8 = newValue;
+        osdShowAdjustment("RC Rate", newValue);
         blackboxLogInflightAdjustmentEvent(ADJUSTMENT_RC_RATE, newValue);
         break;
     case ADJUSTMENT_RC_EXPO:
         newValue = constrain((int)controlRateConfig->rcExpo8 + delta, 0, 100); // FIXME magic numbers repeated in cli.c
         controlRateConfig->rcExpo8 = newValue;
+        osdShowAdjustment("RC EXPO", newValue);
         blackboxLogInflightAdjustmentEvent(ADJUSTMENT_RC_EXPO, newValue);
         break;
     case ADJUSTMENT_THROTTLE_EXPO:
         newValue = constrain((int)controlRateConfig->thrExpo8 + delta, 0, 100); // FIXME magic numbers repeated in cli.c
         controlRateConfig->thrExpo8 = newValue;
+        osdShowAdjustment("Throttle EXPO", newValue);
         generateThrottleCurve();
         blackboxLogInflightAdjustmentEvent(ADJUSTMENT_THROTTLE_EXPO, newValue);
         break;
@@ -242,6 +247,7 @@ static void applyStepAdjustment(controlRateConfig_t *controlRateConfig, uint8_t 
     case ADJUSTMENT_PITCH_RATE:
         newValue = constrain((int)controlRateConfig->rates[FD_PITCH] + delta, 0, CONTROL_RATE_CONFIG_ROLL_PITCH_RATE_MAX);
         controlRateConfig->rates[FD_PITCH] = newValue;
+        osdShowAdjustment("Pitch Rate", newValue);
         blackboxLogInflightAdjustmentEvent(ADJUSTMENT_PITCH_RATE, newValue);
         if (adjustmentFunction == ADJUSTMENT_PITCH_RATE) {
             break;
@@ -250,17 +256,20 @@ static void applyStepAdjustment(controlRateConfig_t *controlRateConfig, uint8_t 
     case ADJUSTMENT_ROLL_RATE:
         newValue = constrain((int)controlRateConfig->rates[FD_ROLL] + delta, 0, CONTROL_RATE_CONFIG_ROLL_PITCH_RATE_MAX);
         controlRateConfig->rates[FD_ROLL] = newValue;
+        osdShowAdjustment("Roll Rate", newValue);
         blackboxLogInflightAdjustmentEvent(ADJUSTMENT_ROLL_RATE, newValue);
         break;
     case ADJUSTMENT_YAW_RATE:
         newValue = constrain((int)controlRateConfig->rates[FD_YAW] + delta, 0, CONTROL_RATE_CONFIG_YAW_RATE_MAX);
         controlRateConfig->rates[FD_YAW] = newValue;
+        osdShowAdjustment("Yaw Rate", newValue);
         blackboxLogInflightAdjustmentEvent(ADJUSTMENT_YAW_RATE, newValue);
         break;
     case ADJUSTMENT_PITCH_ROLL_P:
     case ADJUSTMENT_PITCH_P:
         newValue = constrain((int)pidProfile->pid[PID_PITCH].P + delta, 0, 200); // FIXME magic numbers repeated in cli.c
         pidProfile->pid[PID_PITCH].P = newValue;
+        osdShowAdjustment("Pitch P", newValue);
         blackboxLogInflightAdjustmentEvent(ADJUSTMENT_PITCH_P, newValue);
 
         if (adjustmentFunction == ADJUSTMENT_PITCH_P) {
@@ -270,12 +279,14 @@ static void applyStepAdjustment(controlRateConfig_t *controlRateConfig, uint8_t 
     case ADJUSTMENT_ROLL_P:
         newValue = constrain((int)pidProfile->pid[PID_ROLL].P + delta, 0, 200); // FIXME magic numbers repeated in cli.c
         pidProfile->pid[PID_ROLL].P = newValue;
+        osdShowAdjustment("Roll P", newValue);
         blackboxLogInflightAdjustmentEvent(ADJUSTMENT_ROLL_P, newValue);
         break;
     case ADJUSTMENT_PITCH_ROLL_I:
     case ADJUSTMENT_PITCH_I:
         newValue = constrain((int)pidProfile->pid[PID_PITCH].I + delta, 0, 200); // FIXME magic numbers repeated in cli.c
         pidProfile->pid[PID_PITCH].I = newValue;
+        osdShowAdjustment("Pitch I", newValue);
         blackboxLogInflightAdjustmentEvent(ADJUSTMENT_PITCH_I, newValue);
         if (adjustmentFunction == ADJUSTMENT_PITCH_I) {
             break;
@@ -284,12 +295,14 @@ static void applyStepAdjustment(controlRateConfig_t *controlRateConfig, uint8_t 
     case ADJUSTMENT_ROLL_I:
         newValue = constrain((int)pidProfile->pid[PID_ROLL].I + delta, 0, 200); // FIXME magic numbers repeated in cli.c
         pidProfile->pid[PID_ROLL].I = newValue;
+        osdShowAdjustment("Roll I", newValue);
         blackboxLogInflightAdjustmentEvent(ADJUSTMENT_ROLL_I, newValue);
         break;
     case ADJUSTMENT_PITCH_ROLL_D:
     case ADJUSTMENT_PITCH_D:
         newValue = constrain((int)pidProfile->pid[PID_PITCH].D + delta, 0, 200); // FIXME magic numbers repeated in cli.c
         pidProfile->pid[PID_PITCH].D = newValue;
+        osdShowAdjustment("Pitch D", newValue);
         blackboxLogInflightAdjustmentEvent(ADJUSTMENT_PITCH_D, newValue);
         if (adjustmentFunction == ADJUSTMENT_PITCH_D) {
             break;
@@ -298,36 +311,43 @@ static void applyStepAdjustment(controlRateConfig_t *controlRateConfig, uint8_t 
     case ADJUSTMENT_ROLL_D:
         newValue = constrain((int)pidProfile->pid[PID_ROLL].D + delta, 0, 200); // FIXME magic numbers repeated in cli.c
         pidProfile->pid[PID_ROLL].D = newValue;
+        osdShowAdjustment("Roll D", newValue);
         blackboxLogInflightAdjustmentEvent(ADJUSTMENT_ROLL_D, newValue);
         break;
     case ADJUSTMENT_YAW_P:
         newValue = constrain((int)pidProfile->pid[PID_YAW].P + delta, 0, 200); // FIXME magic numbers repeated in cli.c
         pidProfile->pid[PID_YAW].P = newValue;
+        osdShowAdjustment("Yaw P", newValue);
         blackboxLogInflightAdjustmentEvent(ADJUSTMENT_YAW_P, newValue);
         break;
     case ADJUSTMENT_YAW_I:
         newValue = constrain((int)pidProfile->pid[PID_YAW].I + delta, 0, 200); // FIXME magic numbers repeated in cli.c
         pidProfile->pid[PID_YAW].I = newValue;
+        osdShowAdjustment("Yaw I", newValue);
         blackboxLogInflightAdjustmentEvent(ADJUSTMENT_YAW_I, newValue);
         break;
     case ADJUSTMENT_YAW_D:
         newValue = constrain((int)pidProfile->pid[PID_YAW].D + delta, 0, 200); // FIXME magic numbers repeated in cli.c
         pidProfile->pid[PID_YAW].D = newValue;
+        osdShowAdjustment("Yaw D", newValue);
         blackboxLogInflightAdjustmentEvent(ADJUSTMENT_YAW_D, newValue);
         break;
     case ADJUSTMENT_RC_RATE_YAW:
         newValue = constrain((int)controlRateConfig->rcYawRate8 + delta, 0, 300); // FIXME magic numbers repeated in cli.c
         controlRateConfig->rcYawRate8 = newValue;
+        osdShowAdjustment("RC Rate Yaw", newValue);
         blackboxLogInflightAdjustmentEvent(ADJUSTMENT_RC_RATE_YAW, newValue);
         break;
     case ADJUSTMENT_D_SETPOINT:
         newValue = constrain((int)pidProfile->dtermSetpointWeight + delta, 0, 254); // FIXME magic numbers repeated in cli.c
         pidProfile->dtermSetpointWeight = newValue;
+        osdShowAdjustment("D Setpoint", newValue);
         blackboxLogInflightAdjustmentEvent(ADJUSTMENT_D_SETPOINT, newValue);
         break;
     case ADJUSTMENT_D_SETPOINT_TRANSITION:
         newValue = constrain((int)pidProfile->setpointRelaxRatio + delta, 0, 100); // FIXME magic numbers repeated in cli.c
         pidProfile->setpointRelaxRatio = newValue;
+        osdShowAdjustment("D Setpoint Transition", newValue);
         blackboxLogInflightAdjustmentEvent(ADJUSTMENT_D_SETPOINT_TRANSITION, newValue);
         break;
     default:
@@ -344,6 +364,7 @@ static void applySelectAdjustment(uint8_t adjustmentFunction, uint8_t position)
         {
             if (getCurrentControlRateProfileIndex() != position) {
                 changeControlRateProfile(position);
+                osdShowAdjustment("Rate Profile", position);
                 blackboxLogInflightAdjustmentEvent(ADJUSTMENT_RATE_PROFILE, position);
                 beeps = position + 1;
             }
