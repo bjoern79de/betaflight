@@ -64,6 +64,7 @@ typedef union adjustmentConfig_u {
 typedef struct adjustmentConfig_s {
     uint8_t adjustmentFunction;
     uint8_t mode;
+	const char * text;
     adjustmentData_t data;
 } adjustmentConfig_t;
 
