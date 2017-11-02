@@ -1123,10 +1123,18 @@ static void osdShowArmed(void)
     displayWrite(osdDisplayPort, 12, 7, "ARMED");
 }
 
+bool adjustmentUpdateIdle = false;
+
 STATIC_UNIT_TESTED void osdRefresh(timeUs_t currentTimeUs)
 {
     static timeUs_t lastTimeUs = 0;
 
+	if (adjustmentUpdateIdle) {
+		resumeRefreshAt = currentTimeUs + (REFRESH_1S / 2);
+		adjustmentUpdateIdle = false;
+		return;
+	}
+	
     // detect arm/disarm
     if (armState != ARMING_FLAG(ARMED)) {
         if (ARMING_FLAG(ARMED)) {
@@ -1242,10 +1250,10 @@ void osdUpdate(timeUs_t currentTimeUs)
 
 void osdShowAdjustment(const char * type, int newValue)
 {
-    char buff[OSD_ELEMENT_BUFFER_LENGTH];
-    displayClearScreen(osdDisplayPort);
-    tfp_sprintf(buff, "%s: %i", type, newValue);
-    displayWrite(osdDisplayPort, 12, 7, buff);
+	adjustmentUpdateIdle = true;
+    char buff[30];
+    tfp_sprintf(buff, "%s: %3d", type, newValue);
+	displayWrite(osdDisplayPort, round(15 - strlen(buff) / 2), 8, buff);
 }
 
 #endif // OSD
